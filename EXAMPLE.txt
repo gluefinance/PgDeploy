@@ -1,0 +1,180 @@
+glue=# BEGIN;
+BEGIN
+glue=# -- Let's create a function "Foo"
+glue=# CREATE FUNCTION Foo(_X numeric) RETURNS NUMERIC AS $BODY$
+glue$# DECLARE
+glue$# BEGIN
+glue$# RETURN _X * 2;
+glue$# END;
+glue$# $BODY$ LANGUAGE plpgsql IMMUTABLE;
+CREATE FUNCTION
+glue=# 
+glue=# -- Let's create another function "Bar"
+glue=# CREATE FUNCTION Bar(_Y numeric) RETURNS NUMERIC AS $BODY$
+glue$# DECLARE
+glue$# BEGIN
+glue$# RETURN _Y / 2;
+glue$# END;
+glue$# $BODY$ LANGUAGE plpgsql IMMUTABLE;
+CREATE FUNCTION
+glue=# 
+glue=# -- Let's see at the changes our deploy would make
+glue=# 
+glue=# SELECT Deploy($DEPLOY$
+glue$# 
+glue$# -- Let's drop the Foo function...
+glue$# DROP FUNCTION Foo(numeric);
+glue$# 
+glue$# -- ...and change the Bar function...
+glue$# CREATE OR REPLACE FUNCTION Bar(_Y numeric) RETURNS NUMERIC AS $BODY$
+glue$# DECLARE
+glue$# BEGIN
+glue$# RETURN _Y / 3;
+glue$# END;
+glue$# $BODY$ LANGUAGE plpgsql IMMUTABLE;
+glue$# 
+glue$# -- ...and add a Blerk function...
+glue$# CREATE OR REPLACE FUNCTION Blerk(_Z numeric) RETURNS TEXT AS $BODY$
+glue$# DECLARE
+glue$# BEGIN
+glue$# RETURN 'Hej';
+glue$# END;
+glue$# $BODY$ LANGUAGE plpgsql IMMUTABLE;
+glue$# 
+glue$# 
+glue$# $DEPLOY$,NULL);
+                      deploy                      
+--------------------------------------------------
+ +-------------------+
+ | Removed functions |
+ +-------------------+
+ 
+ Schema................- public
+ Name..................- foo
+ Argument data types...- _x numeric
+ Result data type......- numeric
+ Language..............- plpgsql
+ Type..................- normal
+ Volatility............- IMMUTABLE
+ Owner.................- postgres
+ Source code (chars)...- 35
+ 
+ 
+ +---------------+
+ | New functions |
+ +---------------+
+ 
+ Schema................+ public
+ Name..................+ blerk
+ Argument data types...+ _z numeric
+ Result data type......+ text
+ Language..............+ plpgsql
+ Type..................+ normal
+ Volatility............+ IMMUTABLE
+ Owner.................+ postgres
+ Source code (chars)...+ 34
+ 
+ 
+ +-------------------------------+
+ | Updated or replaced functions |
+ +-------------------------------+
+ 
+ Schema................: public
+ Name..................: bar
+ Argument data types...: _y numeric
+ Result data type......: numeric
+ Language..............: plpgsql
+ Type..................: normal
+ Volatility............: IMMUTABLE
+ Owner.................: postgres
+ 4 c RETURN _Y / 2;
+ 4 c RETURN _Y / 3;
+ 
+ 
+ 
+ MD5 of changes: 635e11295435a8eb47519ccd38a5a6d0
+(1 row)
+
+glue=# 
+glue=# -- Changes looks good. Let's deploy for real!
+glue=# 
+glue=# SELECT Deploy($DEPLOY$
+glue$# 
+glue$# -- Let's drop the Foo function...
+glue$# DROP FUNCTION Foo(numeric);
+glue$# 
+glue$# -- ...and change the Bar function...
+glue$# CREATE OR REPLACE FUNCTION Bar(_Y numeric) RETURNS NUMERIC AS $BODY$
+glue$# DECLARE
+glue$# BEGIN
+glue$# RETURN _Y / 3;
+glue$# END;
+glue$# $BODY$ LANGUAGE plpgsql IMMUTABLE;
+glue$# 
+glue$# -- ...and add a Blerk function...
+glue$# CREATE OR REPLACE FUNCTION Blerk(_Z numeric) RETURNS TEXT AS $BODY$
+glue$# DECLARE
+glue$# BEGIN
+glue$# RETURN 'Hej';
+glue$# END;
+glue$# $BODY$ LANGUAGE plpgsql IMMUTABLE;
+glue$# 
+glue$# 
+glue$# $DEPLOY$,'635e11295435a8eb47519ccd38a5a6d0');
+                      deploy                      
+--------------------------------------------------
+ +-------------------+
+ | Removed functions |
+ +-------------------+
+ 
+ Schema................- public
+ Name..................- foo
+ Argument data types...- _x numeric
+ Result data type......- numeric
+ Language..............- plpgsql
+ Type..................- normal
+ Volatility............- IMMUTABLE
+ Owner.................- postgres
+ Source code (chars)...- 35
+ 
+ 
+ +---------------+
+ | New functions |
+ +---------------+
+ 
+ Schema................+ public
+ Name..................+ blerk
+ Argument data types...+ _z numeric
+ Result data type......+ text
+ Language..............+ plpgsql
+ Type..................+ normal
+ Volatility............+ IMMUTABLE
+ Owner.................+ postgres
+ Source code (chars)...+ 34
+ 
+ 
+ +-------------------------------+
+ | Updated or replaced functions |
+ +-------------------------------+
+ 
+ Schema................: public
+ Name..................: bar
+ Argument data types...: _y numeric
+ Result data type......: numeric
+ Language..............: plpgsql
+ Type..................: normal
+ Volatility............: IMMUTABLE
+ Owner.................: postgres
+ 4 c RETURN _Y / 2;
+ 4 c RETURN _Y / 3;
+ 
+ 
+ 
+ MD5 of changes: 635e11295435a8eb47519ccd38a5a6d0
+(1 row)
+
+glue=# 
+glue=# -- Done!
+glue=# COMMIT;
+COMMIT
+glue=# 
